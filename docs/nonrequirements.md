@@ -18,8 +18,9 @@
 - 秘密情報: コードに直書きしない（App Settings/Key Vault 等で管理）
 
 ## 4. CORS
-- 方針: ブラウザのアドレスバー直接アクセスを主用途とし、現時点では特別な CORS 設定は不要。
-- 付記: フロントエンド（XHR/Fetch）などクロスオリジンからの呼び出しが発生する場合、許可オリジンを明示設定する。
+- 許可オリジン: `*`（すべてのオリジンを許可、資格情報なし）
+- 方針: 初期は `*` で開始し、特定ドメインへの絞り込みは後日実施する。
+- 備考: ブラウザアドレスバーからの直接アクセスおよびクロスオリジン（XHR/Fetch）に対応。
 
 ## 5. ログ/監視
 - 監視: Application Insights 有効化
@@ -28,20 +29,22 @@
 
 ## 6. デプロイ/運用
 - CI/CD: GitHub Actions を利用
-  - 推奨: OIDC で `azure/login` 実行 → Zip Deploy（Run From Package）
-  - 推奨アプリ設定: `WEBSITE_RUN_FROM_PACKAGE`（パッケージからの実行）
+  - 認証: OIDC（OpenID Connect）で `azure/login` を実行
+  - デプロイ方法: Zip Deploy（Run From Package）
+  - 必須アプリ設定: `WEBSITE_RUN_FROM_PACKAGE=1`（パッケージからの実行）
 - 必須リソース/設定:
   - `AzureWebJobsStorage`（ストレージアカウント GPv2）
-  - `FUNCTIONS_EXTENSION_VERSION=v4`
+  - `FUNCTIONS_EXTENSION_VERSION=~4`
   - `APPLICATIONINSIGHTS_CONNECTION_STRING`（または旧 `APPINSIGHTS_INSTRUMENTATIONKEY`）
 
-## 7. 命名規約（例）
-- 環境接尾辞: `<env>` を `dev/stg/prd` 等で置換
-- 例:
+## 7. 命名規約
+- 環境接尾辞: `<env>` を `dev`/`stg`/`prd` 等で置換
+- ランダム接尾辞: `<rand>` を 3～6 文字の英数字で置換（ストレージの一意性確保）
+- 確定命名:
   - リソースグループ: `rg-calcapi-jpe-<env>`
   - Function App: `func-calcapi-jpe-<env>`
-  - ストレージ: `stcalcjpe<unique>`
-  - App Insights: `appi-calcapi-jpe-<env>`
+  - ストレージアカウント: `stcalcjpe<rand>`
+  - Application Insights: `appi-calcapi-jpe-<env>`
 
 ## 8. 運用ポリシー
 - 変更管理: Pull Request ベース／CI でビルド・デプロイを自動化
